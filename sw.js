@@ -1,5 +1,5 @@
 /* Offline cache. When you change any file, bump CACHE (v1 → v2) so iPads fetch the new version. */
-const CACHE = 'genetic-world-v2';
+const CACHE = 'genetic-world-v3';
 const FILES = [
   './',
   'index.html',
@@ -8,6 +8,7 @@ const FILES = [
   'js/data.js',
   'js/genetics.js',
   'js/state.js',
+  'js/online.js',
   'js/sound.js',
   'js/ui.js',
   'js/drag.js',
@@ -22,6 +23,7 @@ const FILES = [
   'js/screens.js',
   'js/quiz.js',
   'js/teacher.js',
+  'js/board.js',
   'js/main.js',
   'fonts/Mitr-Regular.ttf',
   'fonts/Mitr-Medium.ttf',
@@ -47,6 +49,8 @@ self.addEventListener('activate', (e) => {
 /* Serve from cache first (works offline), refresh the cache in the background. */
 self.addEventListener('fetch', (e) => {
   if (e.request.method !== 'GET') return;
+  // Only the game's own files: never cache the online leaderboard (it must stay live).
+  if (new URL(e.request.url).origin !== self.location.origin) return;
   e.respondWith(
     caches.match(e.request, { ignoreSearch: true }).then((hit) => {
       const net = fetch(e.request)

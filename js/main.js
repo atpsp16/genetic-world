@@ -10,12 +10,14 @@ GW.app = (function () {
         <span class="chip chip-demo" id="tb-demo" hidden>โหมดสาธิต</span>
         <span class="chip" id="tb-lv"></span>
         <span class="chip chip-coin" id="tb-coins"></span>
+        <button class="icon-btn" id="tb-board" aria-label="อันดับคะแนน" title="อันดับคะแนน">🏆</button>
         <button class="icon-btn" id="tb-book" aria-label="สมุดสะสม" title="สมุดสะสม">📖</button>
         <button class="icon-btn" id="tb-sound" aria-label="เปิดหรือปิดเสียง" title="เสียง"></button>
         <button class="icon-btn" id="tb-map" aria-label="แผนที่โรงงาน" title="แผนที่โรงงาน">🗺️</button>
       </div>`;
     $('#tb-home').addEventListener('click', () => { GW.sound.play('click'); GW.screens.title(); });
     $('#tb-book').addEventListener('click', () => { GW.sound.play('click'); GW.screens.book(); });
+    $('#tb-board').addEventListener('click', () => { GW.sound.play('click'); GW.board.show(); });
     $('#tb-map').addEventListener('click', () => { GW.sound.play('click'); GW.screens.map(); });
     $('#tb-sound').addEventListener('click', () => {
       GW.state.set('sound', !GW.state.get().sound);
@@ -40,7 +42,13 @@ GW.app = (function () {
     $('#tb-demo').hidden = !s.demo;
   }
 
+  let leaveFns = [];
+  /** Run fn when the current screen is replaced (e.g. stop a refresh timer). */
+  function onLeave(fn) { leaveFns.push(fn); }
+
   function screen(name, label) {
+    leaveFns.forEach((fn) => { try { fn(); } catch (e) { /* ignore */ } });
+    leaveFns = [];
     document.body.dataset.screen = name;
     GW.drag.reset();
     $('#topbar').hidden = name === 'title';
@@ -61,7 +69,7 @@ GW.app = (function () {
     }
   }
 
-  return { screen, refreshTop, boot };
+  return { screen, onLeave, refreshTop, boot };
 })();
 
 GW.app.boot();

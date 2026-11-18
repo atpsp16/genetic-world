@@ -181,7 +181,14 @@ GW.runner = (function () {
     run.coins += bonus;
     run.exp += 30;
     GW.state.setStars(run.level.id, stars);
-    GW.screens.result({ level: run.level, stars, mistakes: run.mistakes, coins: run.coins, exp: run.exp });
+    // Leaderboard score for this chapter: 100 − 10 per mistake (minimum 20); the best attempt counts.
+    const score = Math.max(20, 100 - run.mistakes * 10);
+    GW.state.setScore(run.level.id, score);
+    GW.online.push();
+    GW.screens.result({
+      level: run.level, stars, mistakes: run.mistakes, coins: run.coins, exp: run.exp,
+      score, best: GW.state.get().scores[run.level.id], total: GW.state.total(),
+    });
   }
 
   return { start };

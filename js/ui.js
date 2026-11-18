@@ -13,6 +13,11 @@ GW.ui = (function () {
   }
   const pick = (a) => a[Math.floor(Math.random() * a.length)];
 
+  /** Escape text typed by players (names come from other devices too). */
+  const esc = (t) => String(t == null ? '' : t)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+
   /** Allele chip HTML, e.g. allele('P') */
   function allele(a, extra) {
     const cls = GW.gen.isDom(a) ? 'dom' : 'rec';
@@ -104,5 +109,5 @@ GW.ui = (function () {
     });
   }
 
-  return { $, $$, shuffle, pick, allele, rule, modal, confetti, floatText, mcq };
+  return { $, $$, shuffle, pick, esc, allele, rule, modal, confetti, floatText, mcq };
 })();

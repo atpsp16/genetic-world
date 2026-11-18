@@ -1,0 +1,22 @@
+{
+  "rules": {
+    "rooms": {
+      "$room": {
+        ".validate": "$room.length <= 20",
+        "players": {
+          ".read": true,
+          ".indexOn": ["total"],
+          "$player": {
+            ".write": "newData.exists() && $player.length <= 40",
+            ".validate": "newData.hasChildren(['name', 'total', 'stars', 'updated'])",
+            "name": { ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 20" },
+            "total": { ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 400" },
+            "stars": { ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 12" },
+            "updated": { ".validate": "newData.val() == now" },
+            "$other": { ".validate": false }
+          }
+        }
+      }
+    }
+  }
+}

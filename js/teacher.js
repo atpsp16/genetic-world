@@ -13,13 +13,23 @@ GW.teacher = (function () {
     const stationRows = GW.STATIONS.map((st, i) => `<li><span class="sn">${i + 1}</span><b>${st.icon} ${st.title}</b> — ${st.mission}</li>`).join('')
       + `<li><span class="sn">★</span><b>🏆 ด่านบอส</b> — เลือกพ่อแม่พันธุ์ให้ได้อัตราส่วนตามใบสั่ง และผสมเพื่อทดสอบ (test cross)</li>`;
 
-    let results = '<p class="muted">ยังไม่มีผลการทดสอบในเครื่องนี้</p>';
-    if (s.pre || s.post) {
-      const bar = (label, r) => r
-        ? `<div class="cb ${label === 'หลังเรียน' ? 'post' : ''}"><span>${label}</span><div class="cb-bar"><i style="width:${(r.score / r.total) * 100}%"></i></div><b>${r.score}/${r.total}</b></div>`
-        : `<div class="cb"><span>${label}</span><div class="cb-bar"></div><b>—</b></div>`;
-      results = `<div class="compare-bars">${bar('ก่อนเรียน', s.pre)}${bar('หลังเรียน', s.post)}</div>`;
+    const bar = (label, r) => r
+      ? `<div class="cb ${label === 'หลังเรียน' ? 'post' : ''}"><span>${label}</span><div class="cb-bar"><i style="width:${(r.score / r.total) * 100}%"></i></div><b>${r.score}/${r.total}</b></div>`
+      : `<div class="cb"><span>${label}</span><div class="cb-bar"></div><b>—</b></div>`;
+    let resultNote = `นักเรียนทำแบบทดสอบ ${GW.QUIZ.length} ข้อก่อนเล่นและหลังเล่น คะแนนจะแสดงเป็นกราฟเปรียบเทียบตรงนี้ เพื่อดูพัฒนาการ`;
+    if (s.pre && s.post) {
+      const diff = s.post.score - s.pre.score;
+      resultNote = diff > 0 ? `พัฒนาขึ้น <b>+${diff}</b> คะแนน` : diff === 0 ? 'คะแนนเท่าเดิม' : `คะแนนลดลง ${-diff} คะแนน`;
+    } else if (s.pre) {
+      resultNote = 'มีคะแนนก่อนเรียนแล้ว — ทำแบบทดสอบหลังเรียนเพื่อดูพัฒนาการ';
     }
+    const results = `
+      <p class="muted">${resultNote}</p>
+      <div class="compare-bars">${bar('ก่อนเรียน', s.pre)}${bar('หลังเรียน', s.post)}</div>
+      <div class="row">
+        <button class="btn btn-ghost" id="tt-pre">📝 ก่อนเรียน</button>
+        <button class="btn btn-ghost" id="tt-post">🎓 หลังเรียน</button>
+      </div>`;
 
     $('#screen').innerHTML = `
       <div class="doc">
@@ -62,7 +72,7 @@ GW.teacher = (function () {
 
         <div class="two-col">
           <section class="card"><h2>จุดเด่นของนวัตกรรม</h2><ul>${t.features.map((x) => `<li>${x}</li>`).join('')}</ul></section>
-          <section class="card"><h2>ผลการทดสอบในเครื่องนี้</h2>${results}</section>
+          <section class="card"><h2>ผลแบบทดสอบก่อน-หลังเรียน</h2>${results}</section>
         </div>
 
         <section class="card tools" ${toolsOpen ? '' : 'hidden'}>
@@ -72,6 +82,8 @@ GW.teacher = (function () {
             <button class="switch ${s.demo ? 'on' : ''}" id="tt-demo" role="switch" aria-checked="${s.demo}"><i></i></button>
           </label>
           ${s.demo ? `<div class="demo-card inline"><h3>⚡ ทางลัดสาธิต</h3>${GW.screens.shortcutsHtml()}</div>` : ''}
+          <p class="small">กระดานคะแนนออนไลน์: ${GW.online.enabled() ? '🟢 เชื่อมต่อแล้ว' : '⚪ ยังไม่ได้ตั้งค่า (แสดงเฉพาะผู้เล่นในเครื่อง)'}
+            · ใช้รหัสห้องใหม่สำหรับแต่ละคาบ เพื่อเริ่มกระดานใหม่</p>
           <div class="tool-row">
             <button class="btn btn-ghost" id="tt-export">💾 คัดลอกรหัสเซฟ</button>
             <button class="btn btn-ghost" id="tt-import">📥 ใส่รหัสเซฟ</button>
@@ -140,13 +152,15 @@ GW.teacher = (function () {
     $('#tt-reset').addEventListener('click', () => {
       GW.ui.modal({
         title: 'เริ่มใหม่ทั้งหมด?',
-        html: '<p>ดาว เหรียญ สมุดสะสม และคะแนนแบบทดสอบในเครื่องนี้จะถูกลบ</p>',
+        html: '<p>ผู้เล่นทุกคนในเครื่องนี้ พร้อมดาว เหรียญ สมุดสะสม และคะแนนแบบทดสอบ จะถูกลบ</p><p class="muted small">คะแนนที่ส่งขึ้นกระดานออนไลน์แล้วจะยังอยู่</p>',
         buttons: [
           { label: 'ยกเลิก', cls: 'btn-ghost' },
           { label: 'ลบและเริ่มใหม่', cls: 'btn-danger', onClick: () => { GW.state.reset(); show(); } },
         ],
       });
     });
+    $('#tt-pre').addEventListener('click', () => { GW.sound.play('click'); GW.quiz.start('pre'); });
+    $('#tt-post').addEventListener('click', () => { GW.sound.play('click'); GW.quiz.start('post'); });
     $('#tt-home').addEventListener('click', () => { GW.sound.play('click'); GW.screens.title(); });
     $('#tt-map').addEventListener('click', () => { GW.sound.play('click'); GW.screens.map(); });
     GW.screens.bindShortcuts($('#screen'));

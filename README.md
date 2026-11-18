@@ -30,5 +30,18 @@
 - รหัสเซฟ และปุ่มเริ่มใหม่ทั้งหมด
 แตะ 5 ครั้งอีกรอบเพื่อซ่อน
 
+## กระดานคะแนนออนไลน์ (Firebase)
+ผู้เล่นใส่ชื่อเล่นและรหัสห้อง คนที่ใช้รหัสห้องเดียวกันจะเห็นอันดับเดียวกันทุกเครื่อง (หน้า 🏆)
+คะแนนแต่ละบท = 100 − 10 × จำนวนครั้งที่ตอบผิด (ต่ำสุด 20) นับครั้งที่ดีที่สุด รวมเต็ม 400
+
+ตั้งค่าครั้งเดียว:
+1. เข้า https://console.firebase.google.com ด้วยบัญชี Google → สร้างโปรเจกต์ (ปิด Google Analytics ได้)
+2. เมนู Build → Realtime Database → Create Database → เลือก Singapore → Start in locked mode
+3. แท็บ Rules → ลบของเดิม วางเนื้อหาไฟล์ `firebase-rules.json` → Publish
+4. คัดลอกลิงก์ฐานข้อมูล (ลงท้าย `firebasedatabase.app`) ใส่ใน `js/data.js` ที่ `GW.ONLINE.databaseURL`
+
+ถ้าไม่ได้ตั้งค่า กระดานจะแสดงเฉพาะผู้เล่นในเครื่องนั้น
+ลบคะแนนเก่า: Firebase Console → Realtime Database → Data หรือใช้รหัสห้องใหม่
+
 ## ลิขสิทธิ์
 ภาพตัวละครทั้งหมดวาดด้วยโค้ดในโปรเจกต์นี้ ฟอนต์ Mitr ใช้สัญญาอนุญาต SIL Open Font License (`fonts/OFL.txt`)
