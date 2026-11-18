@@ -17,7 +17,7 @@ GW.CONFIG = {
 /* กระดานคะแนนออนไลน์ ---------------------------------------------------
    databaseURL = ลิงก์ Firebase Realtime Database (เว้นว่าง = ใช้กระดานคะแนนในเครื่องอย่างเดียว) */
 GW.ONLINE = {
-  databaseURL: '',
+  databaseURL: 'https://genetic-world-a595e-default-rtdb.asia-southeast1.firebasedatabase.app',
   defaultRoom: 'ห้องเรียน',
 };
 

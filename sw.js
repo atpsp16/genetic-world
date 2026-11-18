@@ -1,5 +1,5 @@
 /* Offline cache. When you change any file, bump CACHE (v1 → v2) so iPads fetch the new version. */
-const CACHE = 'genetic-world-v3';
+const CACHE = 'genetic-world-v4';
 const FILES = [
   './',
   'index.html',
