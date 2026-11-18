@@ -31,15 +31,17 @@ GW.runner = (function () {
               <span class="step-n">${run.done.has(i) ? '✓' : i + 1}</span><span class="step-t">${s.short}</span>
             </button>`).join('<span class="step-line"></span>')}
         </nav>
-        <section class="st-main card" id="st-main"></section>
-        <aside class="st-side">
+        <div class="st-meta">
           <div class="card st-info">
             <div class="st-kicker">${level.boss ? 'ด่านบอส' : 'สถานี'} ${run.idx + 1} จาก ${list.length}</div>
             <h2 class="st-title"><span class="st-ic">${st.icon}</span>${st.title}</h2>
             <p class="mission"><b>ภารกิจ:</b> ${typeof st.mission === 'function' ? st.mission(level) : st.mission}</p>
           </div>
-          <div class="card coach"><div class="coach-face">${GW.creature.mascot('info', 64)}</div><div class="bubble" id="bubble"></div></div>
           <div class="card rule">${GW.ui.rule(T)}</div>
+        </div>
+        <section class="st-main card" id="st-main"></section>
+        <aside class="st-dock">
+          <div class="card coach"><div class="coach-face">${GW.creature.mascot('info', 64)}</div><div class="bubble" id="bubble" aria-live="polite"></div></div>
           <div class="side-actions">
             <button class="btn btn-ghost" id="btn-hint">💡 คำใบ้</button>
             ${demo ? '<button class="btn btn-demo" id="btn-auto">✨ เติมคำตอบ</button>' : ''}
@@ -58,9 +60,18 @@ GW.runner = (function () {
       if (run.idx < list.length - 1) { run.idx++; show(); } else finish();
     });
 
+    // On phones the dock is fixed to the bottom of the screen: keep the page's
+    // bottom padding equal to its height so nothing hides behind it.
+    if (dockObserver) dockObserver.disconnect();
+    const dock = $('.st-dock');
+    const syncDock = () => document.documentElement.style.setProperty('--dock-h', dock.offsetHeight + 'px');
+    if (window.ResizeObserver) { dockObserver = new ResizeObserver(syncDock); dockObserver.observe(dock); }
+    syncDock();
+
     const ctx = makeCtx(st);
     st.render($('#st-main'), ctx);
   }
+  let dockObserver = null;
 
   function makeCtx(st) {
     const idx = run.idx;
@@ -122,7 +133,8 @@ GW.runner = (function () {
         if (step) { step.classList.add('done'); step.querySelector('.step-n').textContent = '✓'; }
         const auto = $('#btn-auto');
         if (auto) auto.hidden = true;
-        if (window.matchMedia('(max-width: 980px)').matches) nb.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        const dockFixed = getComputedStyle($('.st-dock')).position === 'fixed';
+        if (!dockFixed && window.matchMedia('(max-width: 980px)').matches) nb.scrollIntoView({ behavior: 'smooth', block: 'center' });
       },
       isDone: () => finished,
       setHints(h) { hints = h || []; },

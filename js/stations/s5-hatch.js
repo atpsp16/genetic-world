@@ -126,6 +126,7 @@ GW.STATIONS.push({
         Object.keys(tally).forEach((g) => GW.state.addToBook(g, tally[g]));
         showBorn(kids);
         drawChart();
+        $('#s5-born').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         if (!ctx.isDone()) ctx.done(message() + '<br>กด <b>ส่งมอบใบสั่งผลิต</b> เมื่อพร้อม');
         else ctx.say(message(), 'happy');
         setTimeout(() => {

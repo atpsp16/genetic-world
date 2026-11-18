@@ -290,7 +290,8 @@ small { font-size: 0.82em; }
 .station {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 320px;
-  grid-template-areas: "step step" "main side";
+  grid-template-rows: auto auto 1fr;
+  grid-template-areas: "step step" "main meta" "main dock";
   gap: 14px;
   padding: 14px 16px 24px;
   max-width: 1440px;
@@ -313,7 +314,8 @@ small { font-size: 0.82em; }
 .step-line { flex: 1 1 12px; min-width: 10px; height: 3px; background: #ddd6fe; border-radius: 2px; }
 
 .st-main { grid-area: main; padding: 18px; min-height: 480px; position: relative; }
-.st-side { grid-area: side; display: flex; flex-direction: column; gap: 12px; }
+.st-meta { grid-area: meta; display: flex; flex-direction: column; gap: 12px; }
+.st-dock { grid-area: dock; display: flex; flex-direction: column; gap: 12px; align-self: start; position: sticky; top: 74px; }
 .st-info { padding: 14px 16px; }
 .st-kicker { font-size: 14px; color: var(--primary); font-weight: 500; }
 .st-title { display: flex; align-items: center; gap: 8px; margin: 2px 0 6px; font-size: 22px; }
@@ -729,6 +731,7 @@ body.has-selection .dropzone:not(.filled) { border-color: var(--teal) !important
 .doc > .card, .doc .two-col > .card { padding: 18px 22px; }
 .doc h2 { color: var(--primary-d); }
 .doc-hero { display: flex; gap: 18px; align-items: center; background: linear-gradient(120deg, #faf5ff, #ecfeff); }
+.doc-logo { flex: none; border: none; background: none; padding: 0; cursor: default; line-height: 0; }
 .doc-hero h1 { font-size: clamp(22px, 2.6vw, 30px); }
 .doc-kicker { color: var(--teal-d); font-weight: 500; font-size: 15px; }
 .doc ol, .doc ul { margin: 0; padding-left: 22px; }
@@ -798,13 +801,14 @@ body.has-selection .dropzone:not(.filled) { border-color: var(--teal) !important
   .cell.small { width: 84px; height: 84px; }
 }
 
+/* iPad portrait: info + coach side by side above the main area */
 @media (max-width: 980px) {
-  .station { grid-template-columns: 1fr; grid-template-areas: "step" "side" "main"; }
-  .st-side { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-  .st-info, .coach { grid-column: span 1; }
-  .rule { grid-column: 1 / -1; display: flex; flex-wrap: wrap; justify-content: center; gap: 4px 18px; }
-  .side-actions { grid-column: 1 / -1; }
-  #btn-next { grid-column: 1 / -1; }
+  .station {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-rows: auto;
+    grid-template-areas: "step step" "meta dock" "main main";
+  }
+  .st-dock { position: static; }
   .st-main { min-height: 0; }
   .map { grid-template-columns: 1fr; }
   .map-side { position: static; grid-template-columns: 1fr 1fr; }
@@ -813,22 +817,253 @@ body.has-selection .dropzone:not(.filled) { border-color: var(--teal) !important
   .step.current .step-t { display: inline; }
 }
 
+/* Phones (portrait, or landscape with little height): the coach, hint and
+   next buttons become a dock fixed to the bottom of the screen. */
+@media (max-width: 700px), (max-height: 500px) {
+  .topbar { height: 52px; gap: 8px; }
+  .tb-logo span, .tb-label, #tb-lv { display: none; }
+  .tb-right { margin-left: auto; gap: 6px; }
+  .icon-btn { width: 40px; height: 40px; font-size: 18px; border-radius: 12px; }
+  .chip { font-size: 14px; padding: 5px 10px; }
+  .center-screen { min-height: calc(100dvh - 52px); padding: 14px 10px 24px; }
+
+  .station {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas: "step" "meta" "main";
+    gap: 10px;
+    padding: 10px 10px calc(var(--dock-h, 150px) + 16px);
+  }
+  .st-main { padding: 12px; border-radius: 18px; }
+  .st-main [id] { scroll-margin-bottom: calc(var(--dock-h, 150px) + 12px); scroll-margin-top: 64px; }
+  .st-meta { gap: 8px; }
+  .st-info { padding: 10px 14px; border-radius: 18px; }
+  .st-kicker { font-size: 13px; }
+  .st-title { font-size: 18px; margin: 0 0 2px; }
+  .st-ic { font-size: 20px; }
+  .mission { font-size: 14px; line-height: 1.45; }
+  .rule { padding: 6px 12px; display: flex; flex-wrap: wrap; justify-content: center; gap: 2px 16px; font-size: 14px; border-radius: 16px; }
+  .st-dock {
+    position: fixed; left: 0; right: 0; bottom: 0; top: auto; z-index: 60; align-self: auto;
+    display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; align-items: center;
+    padding: 8px max(10px, env(safe-area-inset-right)) calc(8px + env(safe-area-inset-bottom)) max(10px, env(safe-area-inset-left));
+    background: rgba(255, 255, 255, 0.96);
+    -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+    border-top: 1px solid var(--line);
+    box-shadow: 0 -8px 24px rgba(76, 58, 140, 0.14);
+  }
+  .st-dock .coach { grid-column: 1 / -1; padding: 0; background: none; border: none; box-shadow: none; gap: 8px; align-items: center; }
+  .st-dock .coach-face svg { width: 42px; height: 42px; }
+  .st-dock .bubble { font-size: 15px; line-height: 1.45; min-height: 0; padding: 7px 10px; max-height: 26vh; overflow-y: auto; }
+  .st-dock .bubble::before { top: 50%; margin-top: -8px; }
+  .side-actions { flex-wrap: nowrap; gap: 8px; }
+  .side-actions .btn { font-size: 15px; padding: 8px 10px; min-height: 44px; }
+  #btn-next { width: auto; font-size: 16px; padding: 10px 16px; min-height: 48px; }
+  .stepper { gap: 2px; }
+  .step { padding: 3px; }
+  .step.current { padding-right: 12px; }
+  .step-n { width: 28px; height: 28px; font-size: 14px; }
+  .step-t { display: none; }
+  .step.current .step-t { display: inline; }
+}
+
+/* Phone landscape: the dock moves to a fixed column on the right so the game keeps the full height */
+@media (max-height: 500px) and (min-width: 701px) {
+  .station { padding: 8px 292px 16px 10px; }
+  .st-dock {
+    left: auto; top: 52px; width: 280px;
+    grid-template-columns: minmax(0, 1fr); align-content: start;
+    padding: 10px max(10px, env(safe-area-inset-right)) 10px 10px;
+    border-top: none; border-left: 1px solid var(--line);
+    box-shadow: -8px 0 24px rgba(76, 58, 140, 0.12);
+    overflow-y: auto;
+  }
+  .st-dock .bubble { max-height: none; }
+  .side-actions { flex-wrap: wrap; }
+  #btn-next { width: 100%; }
+}
+
+/* Narrow screens (phone portrait) */
 @media (max-width: 700px) {
   body { font-size: 16px; }
-  .tb-logo span, .tb-label, #tb-lv { display: none; }
-  .tb-right { margin-left: auto; }
-  .st-side { grid-template-columns: 1fr; }
-  .s1-cards, .bp-pools, .compare, .two-col, .map-side, .mcq-choices { grid-template-columns: 1fr; }
-  .s5 { grid-template-columns: 1fr; }
-  .s3-flow { grid-template-columns: 1fr; justify-items: center; }
-  .arrow-body { transform: rotate(90deg); margin: 18px 0; }
-  .punnett { grid-template-columns: 70px repeat(2, minmax(0, 1fr)); }
+  h1 { font-size: 24px; }
+  .bcard, .lvl, .choice { -webkit-user-select: none; }
+
+  /* title */
+  .title-screen { padding: 14px 10px; }
+  .title-card { padding: 26px 14px 18px; border-radius: 28px; }
+  .logo { flex-direction: column; text-align: center; gap: 4px; }
+  .logo .dna { width: 54px; height: 54px; }
+  .logo-main { font-size: 34px; }
+  .logo-sub { font-size: 20px; }
+  .title-pals { gap: 4px; margin: 12px 0 4px; }
+  .title-pals .puk { width: 104px; height: 104px; }
+  .title-pals .egg { width: 62px; height: 78px; }
+  .title-desc { font-size: 16px; }
+  .btn-xl { font-size: 21px; padding: 14px 30px; min-height: 58px; }
+
+  /* map, book, teacher page */
+  .map, .book, .doc { padding: 12px 10px 24px; }
+  .levels { grid-template-columns: 1fr 1fr; gap: 10px; }
+  .lvl { padding: 12px 6px 10px; border-radius: 20px; }
+  .lvl-art { min-height: 56px; }
+  .lvl-art .puk { width: 50px; height: 50px; }
+  .lvl-art .x { font-size: 20px; }
+  .lvl-boss { font-size: 42px; line-height: 56px; }
+  .lvl-name { font-size: 17px; }
+  .lvl-cross { font-size: 12px; line-height: 1.35; }
+  .lvl-stars { font-size: 20px; }
+  .lvl-status { font-size: 13px; }
+  .map-side { grid-template-columns: 1fr; }
+  .book-grid { grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+  .bk { padding: 10px 4px; border-radius: 18px; }
+  .bk .puk { width: 76px; height: 76px; }
+  .bk-g { font-size: 22px; }
+  .bk-p { font-size: 13px; }
+  .bk-z, .bk-n { font-size: 11px; }
+  .doc > .card, .doc .two-col > .card { padding: 14px; }
+  .doc-hero { flex-direction: column; text-align: center; }
+  .doc table { font-size: 14px; }
+  .switch-row { align-items: flex-start; }
+
+  /* work order */
+  .paper { padding: 20px 14px; }
+  .paper-head { font-size: 20px; }
+  .paper-req { font-size: 18px; }
+  .pp-card { padding: 6px 10px 8px; }
+  .pp-card .puk { width: 84px; height: 84px; }
+  .paper-parents { gap: 8px; }
+  .paper-parents.boss-art .puk { width: 76px; height: 76px; }
+  .stamp { right: 6px; top: 50px; font-size: 17px; }
+  .paper-steps { font-size: 12.5px; }
+
+  /* shared pieces */
+  .bp-pools, .compare, .two-col, .mcq-choices { grid-template-columns: 1fr; }
+  .mcq { padding: 10px; }
+  .mcq-q { font-size: 16px; }
+  .choice { font-size: 15px; min-height: 48px; padding: 8px 10px; }
+  .tray { margin-top: 12px; padding: 8px 10px 10px; border-radius: 16px; }
+  .tray-label { font-size: 13px; margin-bottom: 6px; line-height: 1.35; }
+  .tray-items { gap: 18px; }
+  .allele { width: 58px; height: 58px; font-size: 31px; }
+  .gtag { font-size: 24px; padding: 8px 12px 10px; min-width: 78px; border-radius: 14px; }
+
+  /* station 1 */
+  .s1-cards { gap: 8px; }
+  .pcard { padding: 8px 6px 10px; border-radius: 18px; }
+  .sex { font-size: 13px; padding: 1px 10px; }
+  .pc-art .puk { width: 88px; height: 88px; }
+  .pc-name { font-size: 16px; }
+  .pc-pheno { font-size: 13px; }
+  .pc-clue { font-size: 12.5px; line-height: 1.4; padding: 4px 7px; margin: 4px 0 6px; }
+  .gslot { min-height: 64px; border-radius: 14px; border-width: 2.5px; }
+  .gslot .ph { font-size: 15px; }
+  .gtag.placed { padding: 4px 10px 6px; }
+  .zyg { font-size: 11px; line-height: 1.3; }
+
+  /* station 2 */
+  .crumbs { font-size: 12px; gap: 2px; margin-bottom: 8px; }
+  .crumb { padding: 2px 8px; }
+  .viewer { border-radius: 28px; }
+  .scene-body .puk { width: 160px; height: 160px; }
+  .magnifier { width: 72px; height: 72px; border-width: 6px; }
+  .s2-caption { font-size: 15px; gap: 8px; padding: 8px 10px; margin: 10px 0 8px; align-items: flex-start; }
+  .term { font-size: 14px; padding: 2px 8px; }
+  .pairs { gap: 10px; flex-wrap: nowrap; }
+  .pb-title { font-size: 15px; }
+  .nucleus { padding: 16px 18px; gap: 26px; }
+  .chromo { width: 32px; height: 132px; border-width: 2.5px; }
+  .locus { width: 52px; height: 52px; top: 40px; border-radius: 14px; }
+  .locus .allele.placed { width: 42px; height: 42px; font-size: 22px; }
+  .pb-note { font-size: 12px; }
+
+  /* station 3 */
+  .s3-who { font-size: 17px; }
+  .s3-flow { grid-template-columns: auto auto auto; gap: 8px; }
+  .cell.big { width: 104px; height: 104px; gap: 8px; border-width: 3px; }
+  .cell.big .mchromo { width: 24px; height: 64px; font-size: 16px; border-width: 2px; }
+  .mchromo span { width: 18px; line-height: 22px; border-radius: 6px; }
+  .arrow-label { font-size: 14px; }
+  .arrow-body { width: 34px; height: 10px; }
+  .arrow-body::after { right: -12px; top: -7px; border-width: 12px; border-left-width: 14px; }
+  .s3-arrow small { display: none; }
+  .s3-gametes { grid-template-columns: repeat(2, 58px); gap: 6px; }
+  .cell.small { width: 58px; height: 58px; border-width: 3px; }
+  .cell.small .mchromo { width: 20px; height: 42px; font-size: 14px; border-width: 2px; }
+  .cell.small .ph { font-size: 20px; }
+  .cell-cap { font-size: 12px; }
+  .s3-summary { font-size: 15px; }
+  .s3-res-row { font-size: 15px; flex-wrap: wrap; }
+  .s3-res-row .lbl { min-width: 0; flex-basis: 100%; }
+
+  /* station 4 */
+  .punnett { grid-template-columns: 62px repeat(2, minmax(0, 1fr)); gap: 6px; }
+  .pn-corner { font-size: 11px; border-radius: 12px; }
+  .pn-head { padding: 4px; border-radius: 12px; }
+  .pn-head small { display: none; }
+  .pn-head .allele { width: 46px; height: 46px; font-size: 25px; }
+  .pn-cell { padding: 6px 4px; border-radius: 14px; border-width: 2.5px; }
+  .pn-slots { gap: 4px; }
   .pslot { width: 46px; height: 46px; }
   .pslot .allele.placed { width: 42px; height: 42px; font-size: 22px; }
-  .pn-head small { display: none; }
-  .nucleus { padding: 18px 22px; gap: 18px; }
-  .born-grid { grid-template-columns: repeat(5, 1fr); }
-  .born-grid .puk { width: 48px; height: 48px; }
-  .doc-hero { flex-direction: column; text-align: center; }
-  .stamp { right: 8px; top: -14px; }
+  .pn-result { min-height: 36px; }
+  .pn-result .puk { width: 34px; height: 34px; }
+  .pn-g { font-size: 18px; }
+  .s4-summary { font-size: 14px; }
+
+  /* station 5 */
+  .s5 { grid-template-columns: 1fr; gap: 10px; }
+  .incubator { padding: 10px; border-radius: 22px; display: grid; grid-template-columns: 108px minmax(0, 1fr); gap: 8px 10px; align-items: center; }
+  .inc-top { grid-column: 1 / -1; margin-bottom: 0; }
+  .inc-glass { height: 128px; border-radius: 56px 56px 16px 16px; padding-bottom: 8px; }
+  .inc-egg .egg { width: 62px; height: 78px; }
+  .inc-base { margin-top: 0; gap: 8px; }
+  .inc-base .btn-lg { font-size: 17px; min-height: 48px; padding: 10px; }
+  .inc-base .row .btn { font-size: 14px; padding: 8px 4px; min-height: 44px; }
+  .born { min-height: 140px; padding: 10px 6px; }
+  .born-one .puk { width: 110px; height: 110px; }
+  .born-name { font-size: 19px; }
+  .born-grid { grid-template-columns: repeat(5, 1fr); gap: 4px; }
+  .born-grid .puk { width: 50px; height: 50px; }
+  .waffle { grid-template-columns: repeat(10, 14px); gap: 3px; }
+  .waffle i { width: 14px; height: 14px; }
+  .chart { padding: 10px; }
+  .bar-row { grid-template-columns: 82px 1fr; gap: 6px; }
+  .bar-label { font-size: 13px; }
+  .bar em { font-size: 12px; padding-left: 6px; }
+  .geno-line { font-size: 13px; }
+
+  /* boss */
+  .order-banner { font-size: 16px; padding: 8px 12px; }
+  .pool { padding: 8px; }
+  .pool-items { gap: 6px; }
+  .bcard .puk { width: 56px; height: 56px; }
+  .bcard b { font-size: 17px; }
+  .bp-mate { gap: 8px; }
+  .mate-slot { min-width: 88px; height: 70px; font-size: 17px; }
+  .mate-slot .puk { width: 42px; height: 42px; }
+  #bp-go { flex-basis: 100%; }
+  .bt-cross { gap: 8px; }
+  .bt-parent { padding: 6px 10px; }
+  .bt-parent .puk { width: 84px; height: 84px; }
+  .bt-kids-row .puk { width: 40px; height: 40px; }
+
+  /* result & quiz */
+  .result-card, .quiz-card { padding: 20px 14px; }
+  .big-stars { font-size: 52px; }
+  .learned { padding: 10px 12px; }
+  .quiz-q { font-size: 18px; }
+  .quiz-card .choice { font-size: 16px; min-height: 52px; }
+  .score-big { font-size: 60px; }
+  .cb { grid-template-columns: 70px 1fr 44px; gap: 6px; font-size: 14px; }
+  .modal { padding: 18px 16px; border-radius: 22px; }
+}
+
+/* Very small phones (iPhone SE size and below) */
+@media (max-width: 380px) {
+  .chip-demo { display: none !important; }
+  .pc-art .puk { width: 74px; height: 74px; }
+  .gtag { min-width: 70px; font-size: 22px; padding: 7px 10px 9px; }
+  .punnett { grid-template-columns: 54px repeat(2, minmax(0, 1fr)); }
+  .pslot { width: 42px; height: 42px; }
+  .pslot .allele.placed { width: 38px; height: 38px; font-size: 20px; }
 }

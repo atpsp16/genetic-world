@@ -2,6 +2,7 @@
    this device's pre/post results, and teacher tools (demo mode, save code, reset). */
 GW.teacher = (function () {
   const { $, $$ } = GW.ui;
+  let toolsOpen = false; // hidden from the audience; see the secret tap below
 
   function show() {
     GW.app.screen('teacher', 'สำหรับครู');
@@ -23,11 +24,11 @@ GW.teacher = (function () {
     $('#screen').innerHTML = `
       <div class="doc">
         <header class="card doc-hero">
-          ${GW.creature.dna(64)}
+          <button class="doc-logo" id="tt-secret" aria-label="GENETIC WORLD">${GW.creature.dna(64)}</button>
           <div>
             <div class="doc-kicker">นวัตกรรมการจัดการเรียนรู้ · รายวิชาวิทยาศาสตร์ ${c.grade}</div>
             <h1>${t.innovation}</h1>
-            <p>พัฒนาโดย <b>${c.developer}</b>${c.school ? ' · ' + c.school : ''}</p>
+            ${GW.screens.credit() ? `<p>${GW.screens.credit()}</p>` : ''}
           </div>
         </header>
 
@@ -64,7 +65,7 @@ GW.teacher = (function () {
           <section class="card"><h2>ผลการทดสอบในเครื่องนี้</h2>${results}</section>
         </div>
 
-        <section class="card tools">
+        <section class="card tools" ${toolsOpen ? '' : 'hidden'}>
           <h2>🛠️ เครื่องมือครู</h2>
           <label class="switch-row">
             <span><b>โหมดสาธิต</b><br><small>ปลดล็อกทุกบท กดข้ามไปสถานีใดก็ได้ และมีปุ่ม ✨ เติมคำตอบ สำหรับนำเสนอ</small></span>
@@ -81,6 +82,22 @@ GW.teacher = (function () {
 
         <div class="row center"><button class="btn btn-ghost" id="tt-home">← หน้าแรก</button><button class="btn" id="tt-map">🗺️ ไปที่แผนที่โรงงาน</button></div>
       </div>`;
+
+    // Hidden teacher tools: tap the DNA logo 5 times in a row to show/hide them.
+    let taps = 0;
+    let tapTimer = null;
+    $('#tt-secret').addEventListener('click', () => {
+      taps++;
+      clearTimeout(tapTimer);
+      tapTimer = setTimeout(() => { taps = 0; }, 1500);
+      if (taps >= 5) {
+        taps = 0;
+        toolsOpen = !toolsOpen;
+        GW.sound.play('coin');
+        show();
+        if (toolsOpen) $('.tools').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    });
 
     $('#tt-demo').addEventListener('click', () => {
       GW.sound.play('click');

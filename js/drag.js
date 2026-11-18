@@ -57,7 +57,43 @@ GW.drag = (function () {
     let ghost = null;
     let over = null;
     let moved = false;
+    let px = sx;
+    let py = sy;
+    let raf = 0;
     try { el.setPointerCapture(e.pointerId); } catch (_) { /* ignore */ }
+
+    function updateOver() {
+      const z = zoneAt(px, py);
+      if (z !== over) {
+        if (over) over.classList.remove('hover');
+        over = z;
+        if (over) over.classList.add('hover');
+      }
+    }
+
+    // Phones: scroll the page while the finger is held near the top/bottom edge,
+    // so a token can reach a target that is off-screen.
+    // A dock fixed across the bottom of the screen hides the page beneath it.
+    const dock = document.querySelector('.st-dock');
+    let visibleBottom = window.innerHeight;
+    if (dock && getComputedStyle(dock).position === 'fixed') {
+      const r = dock.getBoundingClientRect();
+      if (r.width > window.innerWidth * 0.6) visibleBottom = r.top;
+    }
+    function autoScroll() {
+      const edge = Math.min(60, window.innerHeight * 0.12);
+      const top = Math.min(120, window.innerHeight * 0.25);
+      const bottom = visibleBottom - edge;
+      let v = 0;
+      if (py < top) v = -Math.min(16, (top - py) / 5 + 3);
+      else if (py > bottom) v = Math.min(16, (py - bottom) / 5 + 3);
+      if (v) {
+        const before = window.scrollY;
+        window.scrollBy(0, v);
+        if (window.scrollY !== before) updateOver();
+      }
+      raf = requestAnimationFrame(autoScroll);
+    }
 
     function move(ev) {
       if (!moved && Math.hypot(ev.clientX - sx, ev.clientY - sy) > 6) {
@@ -70,15 +106,13 @@ GW.drag = (function () {
         ghost.style.height = rect.height + 'px';
         document.body.appendChild(ghost);
         el.classList.add('drag-src');
+        raf = requestAnimationFrame(autoScroll);
       }
       if (!moved) return;
-      ghost.style.transform = `translate(${ev.clientX - offX}px, ${ev.clientY - offY}px) scale(1.12)`;
-      const z = zoneAt(ev.clientX, ev.clientY);
-      if (z !== over) {
-        if (over) over.classList.remove('hover');
-        over = z;
-        if (over) over.classList.add('hover');
-      }
+      px = ev.clientX;
+      py = ev.clientY;
+      ghost.style.transform = `translate(${px - offX}px, ${py - offY}px) scale(1.12)`;
+      updateOver();
     }
 
     function up(ev) {
@@ -86,6 +120,7 @@ GW.drag = (function () {
       el.removeEventListener('pointerup', up);
       el.removeEventListener('pointercancel', up);
       el.classList.remove('drag-src');
+      cancelAnimationFrame(raf);
 
       if (!moved) {
         if (ev.type === 'pointercancel') return;
@@ -101,9 +136,10 @@ GW.drag = (function () {
 
       if (over) over.classList.remove('hover');
       if (over && tryDrop(over, data)) { ghost.remove(); return; }
-      // fly back to where it came from
+      // fly back to where it came from (it may have moved if the page scrolled)
+      const home = el.getBoundingClientRect();
       ghost.style.transition = 'transform .25s ease, opacity .25s';
-      ghost.style.transform = `translate(${rect.left}px, ${rect.top}px) scale(1)`;
+      ghost.style.transform = `translate(${home.left}px, ${home.top}px) scale(1)`;
       ghost.style.opacity = '0.4';
       ghost.addEventListener('transitionend', () => ghost.remove(), { once: true });
       setTimeout(() => ghost.remove(), 400);

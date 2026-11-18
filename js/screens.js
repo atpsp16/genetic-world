@@ -3,6 +3,12 @@ GW.screens = (function () {
   const { $, $$ } = GW.ui;
   const C = GW.creature;
 
+  /** "พัฒนาโดย … · โรงเรียน …" — empty when both are blank in data.js. */
+  function credit() {
+    const c = GW.CONFIG;
+    return [c.developer ? 'พัฒนาโดย ' + c.developer : '', c.school].filter(Boolean).join(' · ');
+  }
+
   /* ---------- Title ---------- */
   function title() {
     GW.app.screen('title');
@@ -23,7 +29,7 @@ GW.screens = (function () {
               <button class="btn btn-ghost" id="t-teacher">🧑‍🏫 สำหรับครู</button>
             </div>
           </div>
-          <div class="credit">พัฒนาโดย ${GW.CONFIG.developer}${GW.CONFIG.school ? ' · ' + GW.CONFIG.school : ''}</div>
+          ${credit() ? `<div class="credit">${credit()}</div>` : ''}
         </div>
       </div>`;
     $('#t-start').addEventListener('click', () => { GW.sound.play('pop'); startGame(); });
@@ -216,5 +222,5 @@ GW.screens = (function () {
     $('#b-back').addEventListener('click', () => { GW.sound.play('click'); map(); });
   }
 
-  return { title, map, order, result, book, shortcutsHtml, bindShortcuts };
+  return { title, map, order, result, book, shortcutsHtml, bindShortcuts, credit };
 })();

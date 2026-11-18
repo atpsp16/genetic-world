@@ -67,6 +67,7 @@
           <div class="bp-res-text"><b>${f} × ${m}</b><span>ได้ลูก ${gen.genoRatioText(f, m)}</span><span>${txt}</span>
           <strong>${ok ? '✓ ตรงตามใบสั่ง' : '✗ ยังไม่ตรงตามใบสั่ง'}</strong></div>
         </div>`;
+      $('#bp-result').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
       if (ok) {
         $$('.bcard', main).forEach((b) => (b.disabled = true));
         $('#bp-go').disabled = true;
